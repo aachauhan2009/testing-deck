@@ -1,0 +1,14 @@
+{
+  "name": "testing",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "mdx-deck testing.mdx",
+    "build": "mdx-deck build testing.mdx"
+  },
+  "dependencies": {
+    "code-surfer": "^3.1.1",
+    "mdx-deck": "4.0.0"
+  }
+}

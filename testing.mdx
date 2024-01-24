@@ -1,0 +1,430 @@
+import Code from "./code";
+import { nightOwl } from "@code-surfer/themes";
+import {
+  Image,
+} from 'mdx-deck'
+import trophy from "./trophy.webp"
+import logo from "./logo_2.png"
+
+
+
+export const theme =  nightOwl;
+
+<Header>
+<div style={{ display:"flex", justifyContent:"space-between", alignContent:"stretch" }}>
+<div>
+</div>
+    <Image src={logo} size="contain"  style={{
+        height: "60px",
+        width: "120px",
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'}} />
+</div>
+
+</Header>
+
+
+# Integrating Confidence: Write Useful Integration Tests
+
+---
+
+We write tests to be confident that our application will work when the user uses them. -Kent C Dodds
+
+---
+
+### Testing Trophy
+
+<Image src={trophy} size="contain" style={{
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  }} />
+
+---
+
+1. Unit Tests: Focus on testing individual units or components in isolation. They verify that each part of the code performs as expected.
+
+2. Integration Tests: Test the interactions between different components or modules to ensure they work together seamlessly.
+
+3. End-to-End Tests: Simulate user scenarios across the entire application to validate the overall functionality and user experience.
+
+---
+
+
+## Unit Tests
+
+---
+
+<Code>
+
+```js
+// The function to be tested
+function addNumbers(a, b) {
+    return a + b;
+}
+
+```
+
+```js
+// Test case 1: Testing positive numbers
+test('Adding positive numbers', () => {
+  const result = addNumbers(2, 3);
+  expect(result).toBe(5); // The expected sum is 5
+});
+// Test case 2: Testing negative numbers
+test('Adding negative numbers', () => {
+  const result = addNumbers(-2, -3);
+  expect(result).toBe(-5); // The expected sum is -5
+});
+```
+</Code>
+
+---
+
+## Integaration Tests
+
+---
+
+<Code>
+
+```js
+
+// pricingFunctions.js
+function getProductPrice(productId) {
+  // Simulate fetching the product price from a database or API
+  // For simplicity, we'll use a hardcoded mapping
+  const productPrices = {
+    'product1': 10,
+    'product2': 20,
+    'product3': 30,
+  };
+  return productPrices[productId] || 0;
+}
+
+function getTaxRate(location) {
+  // Simulate fetching the tax rate based on the location
+  // For simplicity, we'll use a hardcoded mapping
+  const taxRates = {
+    'US': 0.1,
+    'EU': 0.2,
+    'CA': 0.15,
+  };
+  return taxRates[location] || 0;
+}
+
+// pricingCalculator.js
+function calculateTotalPrice(productId, quantity, location) {
+  // Calculate the product price
+  const productPrice = getProductPrice(productId);
+
+  // Calculate the tax rate
+  const taxRate = getTaxRate(location);
+
+  // Calculate the total price (product price + tax)
+  const totalPrice = productPrice * quantity * (1 + taxRate);
+
+  return totalPrice;
+}
+
+```
+
+```js
+import { calculateTotalPrice } from './pricingCalculator';
+
+test('Calculate total price with tax for a product', () => {
+  
+  const productId = 'product2';
+  const quantity = 3;
+  const location = 'US';
+
+  const totalPrice = calculateTotalPrice(productId, quantity, location);
+
+  expect(totalPrice).toBe(66); // (20 * 3) * (1 + 0.1) = 66
+});
+```
+</Code>
+
+---
+
+## What type of tests are more useful?
+
+---
+
+<Code>
+
+```js
+
+/* Unit Tests */
+
+import React from 'react';
+
+const Counter = ({ count }) => {
+  return (
+    <div>
+      <h2>Counter</h2>
+      <p>Count: {count}</p>
+    </div>
+  );
+};
+
+export default Counter;
+
+// Test cases for Counter
+
+test('Counter renders correctly', () => {
+  render(<Counter count={5} />);
+  const countElement = screen.getByText('Count: 5');
+  expect(countElement).toBeInTheDocument();
+});
+
+```
+
+</Code>
+
+---
+
+<Code>
+
+```js
+
+import React, { useState } from 'react';
+
+const CounterController = ({ onIncrement }) => {
+  const [localCount, setLocalCount] = useState(0);
+
+  const handleIncrement = () => {
+    setLocalCount(localCount + 1);
+    onIncrement(localCount);
+  };
+
+  return (
+    <div>
+      <h2>Counter Controller</h2>
+      <button onClick={handleIncrement}>Increment</button>
+    </div>
+  );
+};
+
+export default CounterController;
+
+// Test cases for CounterController
+
+test('Increment button triggers callback in CounterController', () => {
+  const mockIncrement = jest.fn();
+  render(<CounterController onIncrement={mockIncrement} />);
+
+  const incrementButton = screen.getByText('Increment');
+  fireEvent.click(incrementButton);
+
+  expect(mockIncrement).toHaveBeenCalledWith(0); 
+});
+
+```
+</Code>
+
+---
+
+<Code>
+
+```js title="Integrated Component"
+
+import React, { useState } from 'react';
+import Counter from './Counter';
+import CounterController from './CounterController';
+
+const App = () => {
+  const [count, setCount] = useState(0);
+
+  const handleIncrement = (updatedCount) => {
+    setCount(updatedCount);
+  };
+
+  return (
+    <div>
+      <Counter count={count} />
+      <CounterController onIncrement={handleIncrement} />
+    </div>
+  );
+};
+
+export default App;
+```
+
+```js title="Integration Test"
+
+// Integration test
+import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom/extend-expect';
+
+test('Increment button updates Counter correctly', () => {
+  render(<App />);
+
+  const incrementButton = screen.getByText('Increment');
+  fireEvent.click(incrementButton);
+
+  const countElement = screen.getByText('Count: 1');
+  
+  expect(countElement).toBeInTheDocument();
+});
+```
+</Code>
+
+---
+
+### Why Integration Tests
+
+<Steps>
+
+- Refactoring Confidence
+
+- Robustness against UI Changes:
+
+- Improving Test Coverage
+
+- End-to-End Testing of Components
+
+</Steps>
+
+---
+
+### Common mistakes
+
+---
+
+<Code>
+
+```js title="Common mistakes #1"
+test('render component', () => {
+    const data = '123';
+    useCustomHook1.mockReturnValue(mock1);
+    useCustomHook2.mockReturnValue({
+        data
+    });
+    useCustomHook3.mockReturnValue({
+        someFn: jest.fn(),
+    });
+
+    const component = render(Component);
+    expect(component).toBeDefined();
+    const button = component.getByTestId(
+        'test-id',
+    );
+    fireEvent.press(button);
+});
+```
+
+```js title="Better Version"
+
+test('should display success message upon clicking the submit button', async () => {
+    // mock API using msw
+    const component = render(Component);
+    const button = component.getByText(
+        'Submit',
+    );
+    fireEvent.press(button);
+    const nextElement = await component.findByText("success message");
+    expect(nextElement).toBeInTheDocument();
+});
+```
+</Code>
+
+---
+
+<Code>
+
+```js title="Common mistakes #2"
+test("changes tab on click", () => {
+    render(
+        <Tabs
+           {...props}
+        />
+    );
+    const tab1 = screen.getByTestId("test-id-tab1");
+    const tab2 = screen.getByTestId("test-id-tab2");
+
+    fireEvent.click(tab2);
+
+    expect(tab1).not.toHaveClass("Mui-selected");
+    expect(tab2).toHaveClass("Mui-selected");
+});
+```
+
+```js title="Better version"
+test("should change tab on click", () => {
+    render(
+        <Tabs
+           {...props}
+        />
+    );
+    const tab1 = screen.getByTestId("test-id-tab1");
+    const tab2 = screen.getByTestId("test-id-tab2");
+
+    fireEvent.click(tab2);
+
+    expect(tab1).toHaveAttribute('aria-disabled', 'false');
+    expect(tab2).toHaveAttribute('aria-disabled', 'true');
+});
+```
+</Code>
+
+---
+
+<Code>
+
+```js
+test(`render component and handle onclick`, () => {
+    const onClick = jest.fn();
+    const { getAllByTestId } = render(
+        <Component
+                onClick={onClick}
+        />
+    );
+    const someFnCalledSindieClick = jest.fn();
+    fireEvent.click(getAllByTestId("123")[0]);
+    onClick();
+    someFnCalledSindieClick();
+    expect(handleTracking).toBeCalledTimes(1);
+    expect(pushGaEvent).toBeCalledTimes(1);
+});
+```
+</Code>
+
+---
+
+The more your tests resemble the way your software is used, the more confidence they can give you. -Kent C Dodds
+
+---
+
+### Best Preactices 
+
+<Steps>
+
+- Don't test implementation details
+
+- Focus on User Behavior
+
+- Limit mocking
+
+- Mock API using msw
+
+- Use Queries on user prespective
+
+</Steps>
+
+---
+
+### References
+
+- [Jest](https://jestjs.io/docs/getting-started)
+- [React Testing Library](https://testing-library.com/docs/react-testing-library/intro)
+- [MSW](https://mswjs.io/)
+- [Jest Dom](https://github.com/testing-library/jest-dom)
+- [How to know what to test](https://kentcdodds.com/blog/how-to-know-what-to-test)
+- [Testing Implementation Details](https://kentcdodds.com/blog/testing-implementation-details)
+- [Write fewer long tests](https://kentcdodds.com/blog/write-fewer-longer-tests)
+- [Common mistakes with testing library](https://kentcdodds.com/blog/common-mistakes-with-react-testing-library)
+
+---
+
+## Thank you
